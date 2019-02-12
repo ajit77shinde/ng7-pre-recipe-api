@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 
 const NoteSchema = mongoose.Schema({
     title: String,
-    content: String
+    description: String,
+    detail: String,
+    ingredients: String
 },{
     timestamp: true
 });

@@ -2,7 +2,7 @@ const Recipe = require('../models/recipe.module');
 
 // create and save the Recipe
 exports.create = (req, res) => {
-    console.log('in recipe controller',req.body)
+    // console.log('in recipe controller', req.body)
     //Validate request
     if (!req.body.description) {
         return res.status(400).send({
@@ -10,31 +10,34 @@ exports.create = (req, res) => {
         });
     }
     // create a Recipe
-    const note = new Recipe({
+    const recipe = new Recipe({
         title: req.body.title,
-        description: req.body.description
+        description: req.body.description,
+        detail: req.body.detail,
+        ingredients: req.body.ingredients
     });
-
+    // console.log("recipes-------------", recipe)
     //save recipe in Database
-    note.save()
+    recipe.save()
         .then(data => {
+            // console.log(data);
             res.send(data);
-        }).catch(err =>{
+        }).catch(err => {
             res.status(500).send({
-        message: err.message || "Some error ocure while creating the recipe"                
+                message: err.message || "Some error ocure while creating the recipe"
             });
         });
 };
 //Retrive and returen all recipes from the database
 exports.findAll = (req, res) => {
     Recipe.find()
-    .then(recipe =>{
-        res.send(recipe);
-    }).catch(err =>{
-        res.status(500).send({
-            message: err.message || "Some error ocure while retriving the recipes."
+        .then(recipe => {
+            res.send(recipe);
+        }).catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error ocure while retriving the recipes."
+            });
         });
-    });
 };
 
 //find a single recipe with a recipeId
