@@ -3,7 +3,10 @@ module.exports = (app) => {
 
     // create new Recipe
     app.post('/recipes',recipe.create);
-
+    
+    //upload image 
+    app.post('/recipes/image_upload',recipe.saveImag);
+    
     //Retrive all Notes
     app.get('/recipes',recipe.findAll);
 
@@ -14,5 +17,5 @@ module.exports = (app) => {
      app.put('/recipes/:recipeId',recipe.update);
 
      //Delete a Note with noteId
-     app.delete('/note/:noteId', recipe.delete);
+     app.delete('/recipe/:noteId', recipe.delete);
 }
