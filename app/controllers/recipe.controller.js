@@ -2,7 +2,8 @@ const Recipe = require('../models/recipe.module');
 const cloudinary = require('cloudinary');
 const config = require('../config/cloudinary.config').cloudinary;
 
-const multer = require('multer')
+const multer = require('multer');
+const cloudinarImageUrl = "http://res.cloudinary.com/dqhg5acpy/image/upload/"
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/')
@@ -21,7 +22,7 @@ cloudinary.config({
 
 // create and save the Recipe
 exports.create = (req, res) => {
-    console.log('in recipe controller', req)
+    console.log('in recipe controller', req.body)
     //Validate request
     if (!req.body.description) {
         return res.status(400).send({
@@ -30,7 +31,8 @@ exports.create = (req, res) => {
     }
     // create a Recipe
 
-    // const imageResponce = saveImageCloudinary();
+    const imageResponce = saveImageCloudinary(req,res);
+    cosnsole.log("responce from cloudify",imageResponce)
     const recipe = new Recipe({
         title: req.body.title,
         description: req.body.description,
@@ -49,39 +51,78 @@ exports.create = (req, res) => {
             });
         });
 };
-
-//Save the recipe Image
-exports.saveImag = (req, res) => {
-    // console.log('file path of Image = ', req.body)
+function saveImageCloudinary(req,res){
+    console.log('file path of Image = ', req.file)
     const upload = multer({ storage }).single('name_of_input-key')
-    upload(req, res, function (err) {
+     upload(req, res,async function (err) {
         if (err) {
             console.log(err)
             return res.send(err)
         }
-        // res.json(req.file)
-        // console.log('file upload to server')
-        // console.log(req.file)
         // SEND FILE TO CLOUDINARY
         const path = req.file.path
         const uniqueFilename = new Date().toISOString()
 
-        cloudinary.v2.uploader.upload(
+        await cloudinary.v2.uploader.upload(
             path,
             { public_id: `blog/${uniqueFilename}`, tags: `blog` }, //directory and tags are optional
             function (err, image) {
                 if (err) return res.send(err)
-                console.log('file uploded to Cloudinary')
+                console.log('file uploded to Cloudinary11111111')
                 //remove file from server
                 const fs = require('fs');
                 fs.unlinkSync(path)
                 //return file details
-                res.json(image)
+                res.json(image);
             }
         )
     })
 }
+//Save the recipe Image
+exports.saveImag = (req, res) => {
+    console.log('file path of Image = ', req.file)
+    // res.json('done')
+    const upload = multer({ storage }).single('name_of_input-key')
+     upload(req, res,async function (err) {
+        if (err) {
+            console.log(err)
+            return res.send(err)
+        }
+        // SEND FILE TO CLOUDINARY
+        const path = req.file.path
+        const uniqueFilename = new Date().toISOString()
 
+        await cloudinary.v2.uploader.upload(
+            path,
+            { public_id: `blog/${uniqueFilename}`, tags: `blog` }, //directory and tags are optional
+            function (err, image) {
+                if (err) return res.send(err)
+                console.log('file uploded to Cloudinary11111111')
+                //remove file from server
+                const fs = require('fs');
+                fs.unlinkSync(path)
+                //return file details
+                res.json(image);
+            }
+        )
+    })
+}
+// save image in 2nd way 
+exports.saveImage2 = async (req, res) =>{
+    var path = '';
+    const upload = multer({ storage }).single('name_of_input-key')
+    return await upload(req, res, function (err) {
+        if (err) {
+          // An error occurred when uploading
+          console.log(err);
+          return res.status(422).send("an Error occured")
+        }  
+        // setTimeout(function(){ console.log("Hello"); }, 3000);
+       // No error occured.
+        path = req.file.path;
+        return res.send("Upload Completed for "+path); 
+  }); 
+}
 
 //Retrive and returen all recipes from the database
 exports.findAll = (req, res) => {

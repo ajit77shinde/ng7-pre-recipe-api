@@ -2,11 +2,13 @@ module.exports = (app) => {
     const recipe = require('../controllers/recipe.controller');
 
     // create new Recipe
-    app.post('/recipes',recipe.create);
+    app.put('/recipes',recipe.create);
     
     //upload image 
     app.post('/recipes/image_upload',recipe.saveImag);
     
+    //upload image 2
+    app.post('/recipes/image_upload2', recipe.saveImage2)
     //Retrive all Notes
     app.get('/recipes',recipe.findAll);
 

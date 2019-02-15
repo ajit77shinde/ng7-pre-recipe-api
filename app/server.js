@@ -9,17 +9,25 @@ app.use(cors());
 // parse requests of content-type - application/json
 app.use(bodyParser.json())
 
+
+app.use(function(req, res, next) {
+    //set headers to allow cross origin request.
+        res.header("Access-Control-Allow-Origin", "*");
+        res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        next();
+    });
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }))
-const storage = multer.diskStorage({
-    destination: function(req, file, cb){
-        cb(null, 'uploads')
-    },
-    filename: function(req, file, cb){
-        console.log(file)
-        cb(null, file.originalname)
-    }
-})
+// const storage = multer.diskStorage({
+//     destination: function(req, file, cb){
+//         cb(null, 'uploads')
+//     },
+//     filename: function(req, file, cb){
+//         console.log(file)
+//         cb(null, file.originalname)
+//     }
+// })
 
 // Configuring the database
 const dbConfig = require('./config/database.config.js');
