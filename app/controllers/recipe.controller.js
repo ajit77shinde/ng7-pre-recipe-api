@@ -8,8 +8,9 @@ cloudinary.config({
     api_key: config.api_key,
     api_secret: config.api_secret
 });
+let imageData2;
 // const multer = require('multer');
-const cloudinarImageUrl = "http://res.cloudinary.com/dqhg5acpy/image/upload/"
+// const cloudinarImageUrl = "http://res.cloudinary.com/dqhg5acpy/image/upload/"
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -22,17 +23,74 @@ const storage = multer.diskStorage({
 })
 
 //Save the recipe Image
-exports.image_upload = (req, res) => {
-    console.log('file path of Image = ', req.file)
+exports.image_upload = async (req, res) => {
+    let imgFinalUrl;
+    // console.log('file path of Image = ', req.file)
     console.log('Request body', req.body)
-    const upload = multer({ storage }).single('image');
-    // console.log('upload', upload);
-    // res.json('done')
 
-    upload(req, res, function (err) {
+    let title = req.body.title;
+    let description = req.body.description;
+    let detail = req.body.detail;
+    let ingredients = req.body.ingredients;
+    await uploader(req, res, (isUploaded) => {
+        if (isUploaded) {
+            let imgUrl = isUploaded.url.split('/');
+            imgFinalUrl = '' + imgUrl[6] + '/' + imgUrl[7] + '/' + imgUrl[8];
+            console.log('imgFinalUrl=======', imgFinalUrl);
+
+
+            //Validate request
+            console.log('req.body.url==========', imgFinalUrl)
+            if (!description) {
+                return res.status(400).send({
+                    message: "Recipe Description can not empty"
+                });
+            }
+            // create a Recipe
+            console.log("responce from cloudify", '' + imgFinalUrl)
+            const recipe = new Recipe({
+                title: title,
+                description: description,
+                detail: detail,
+                ingredients: ingredients,
+                imgUrl: imgFinalUrl
+            });
+            //save recipe in Database
+            recipe.save()
+                .then(data => {
+                    // console.log(data);
+                    res.send(data);
+                }).catch(err => {
+                    res.status(500).send({
+                        message: err.message || "Some error ocure while creating the recipe"
+                    });
+                });
+
+
+
+
+
+
+
+
+
+
+        }
+    });
+
+
+}
+
+async function uploader(req, res, callback) {
+    let imageInfo;
+    console.log('Enter in function ========');
+    const upload = await multer({ storage }).single('image');
+    await upload(req, res, await function (err) {
+        console.log('Enter in 2 function');
+
         if (err) {
             console.log(err)
-            return res.send(err)
+            return callback(false);
         }
         // SEND FILE TO CLOUDINARY
         const path = req.file.path
@@ -42,17 +100,21 @@ exports.image_upload = (req, res) => {
             path,
             { public_id: `blog/${uniqueFilename}`, tags: `blog` }, //directory and tags are optional
             function (err, image) {
-                if (err) return res.send(err)
+                console.log('Enter in 3 function');
+
+                if (err) return callback(false);
                 //remove file from server
                 const fs = require('fs');
                 fs.unlinkSync(path)
                 //return file details
-                res.json(image);
+                if (image) {
+                    return callback(image);
+                }
             }
         )
     })
-}
 
+}
 // create and save the Recipe
 exports.create = (req, res) => {
     console.log('in recipe controller', req)
@@ -136,13 +198,4 @@ exports.update = (req, res) => {
 };
 //Delete a recipe with the specified noteId inn request
 exports.delete = (req, res) => {
-
 }
-
-
-
-
-
-
-
-
